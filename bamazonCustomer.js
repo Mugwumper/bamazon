@@ -22,8 +22,41 @@ connection.connect(function (err) {
 function prompt_first() {
     log("Welcome to Bamazon");
     log(" * * suggested that you widen your git bash window to allow each row to display on a single line. *  * ");
-    listProducts();
+    prompt_main();
 }
+
+
+function prompt_main() {
+  log('');
+  inquirer
+    .prompt({
+      name: "action",
+      type: "list",
+      message: "What would you like to do?",
+      choices: [
+        "List Products",
+        "Make a Purchase",
+        "exit"
+      ]
+    })
+    .then(function(answer) {
+      switch (answer.action) {
+      case "List Products":
+        listProducts();
+        break;
+
+      case "Make a Purchase":
+        prompt_purchase();
+        break;
+
+      case "exit":
+        connection.end();
+        break;
+      }
+    });
+}
+
+
 
 var listProducts = function () {
   resetGlobalIDs();
@@ -38,23 +71,23 @@ var listProducts = function () {
         " || qty: " + res[i].stock_quantity);
       applyIDtoGlobals(res[i].item_id);
     }
-    purchasePrompt();
+      prompt_main();
   });
 }
 
-function purchasePrompt() {
+function prompt_purchase() {
   inquirer.prompt([
     {
       name: "ID",
       type: "input",
-      message: "Please enter Item ID you like to purhcase.",
+      message: "Enter 'id' for item you would like to purchase:",
       validate: validateItemId,
       filter: Number
     },
     {
       name: "Quantity",
       type: "input",
-      message: "How many items do you wish to purchase?",
+      message: "Quantity:",
       filter: Number
     },
 
@@ -74,18 +107,18 @@ function purchasePrompt() {
     }; 
 };
 
-function purchaseOrder(ID, amtNeeded) {
+function purchaseOrder(ID, Quantity) {
+  console.log("");
   connection.query('Select * FROM products WHERE item_id = ' + ID, function (err, res) {
     if (err) { console.log(err) };
-    if (amtNeeded <= res[0].stock_quantity) {
-      var totalCost = res[0].price * amtNeeded;
-      console.log("Good news your order is in stock!");
-      console.log("Your total cost for " + amtNeeded + " " + res[0].product_name + " is $" + totalCost + " Thank you!");
-      connection.query("UPDATE products SET stock_quantity = stock_quantity - " + amtNeeded + " WHERE item_id = " + ID);
+    if (Quantity <= res[0].stock_quantity) {
+      var totalCost = res[0].price * Quantity;
+      console.log("Your total cost for " + Quantity + " " + res[0].product_name + " is $" + totalCost);
+      connection.query("UPDATE products SET stock_quantity = stock_quantity - " + Quantity + " WHERE item_id = " + ID);
     } else {
-      console.log("Insufficient quantity, sorry we do not have enough " + res[0].product_name + "to complete your order.");
+      console.log("Quantity insufficient. There are not enough " + res[0].product_name + "in stock to complete your order.");
     };
-    listProducts();
+    prompt_main();
   });
 };
 
@@ -145,36 +178,6 @@ function applyIDtoGlobals(id) {
 //     log(" * * suggested that you widen your git bash window to allow each row to display on a single line. *  * ");
 //     listProducts();
 // }
-
-function prompt_main() {
-    log('m');
-    inquirer
-      .prompt({
-        name: "action",
-        type: "list",
-        message: "What would you like to do?",
-        choices: [
-          "List Products",
-          "Make a Purchase",
-          "exit"
-        ]
-      })
-      .then(function(answer) {
-        switch (answer.action) {
-        case "List Products":
-          listProducts();
-          break;
-
-        case "Make a Purchase":
-          prompt_purchase();
-          break;
-
-        case "exit":
-          connection.end();
-          break;
-        }
-      });
-}
 
 //   // item_id INT NOT NULL AUTO_INCREMENT,
 //   // product_name VARCHAR(45) NULL,
