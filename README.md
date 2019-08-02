@@ -1,5 +1,8 @@
 # bamazon
 
+## VIDEO
+![video of running app](running app.mp4)
+
 
 ## ISSUES
 There is a problem when reporting the invalid product id applied when performing a purchase. The code works but the display doesn't allow a new valid value to be entered.
